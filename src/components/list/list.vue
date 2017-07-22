@@ -17,12 +17,18 @@
 </template>
 <script type="text/ecmascript-6">
     import BScroll from 'better-scroll'
+    /*只需要引入mapMutations方法展开mutations数组，而并不需要引入store.js，因为已经在根组件引入*/
+    import { mapMutations } from 'vuex'
     export default{
         data(){
             return {
-                list:[],
                 bs:{},
                 toggle:true
+            }
+        },
+        computed:{
+            list(){
+                return this.$store.state.list
             }
         },
         props:{
@@ -37,38 +43,25 @@
             }
         },
         methods:{
+            /*引入store.mutations的方法*/
+            ...mapMutations([
+                'add',
+                'allComplete',
+                'itemToggle',
+                'itemDel',
+                'clearComplete'
+            ]),
             /*input监听keyperss事件，遇到换行符就输出字符串到list数组*/
             textInput(event){
                 if(event.keyCode==13){
-                    this.list.push({val:event.target.value,isCom:false})
+                    this.add({val:event.target.value,isCom:false})
                     event.target.value=''
-                    //数组改变，传递给父组件
-                    this.$emit('listChange',this.list)
                     /*list添加新元素后需要刷新bs*/
                     /*需要在下一次事件循环中执行刷新，防止DOM未加载完毕*/
                     this.$nextTick(() => {
                         this.bs.refresh()
                     })
                 }
-            },
-            //切换全部完成/未完成
-            allComplete(){
-                this.toggle=!this.toggle
-                this.list.forEach((item) => {
-                    item.isCom=!this.toggle
-                })
-                //数组改变，传递给父组件
-                this.$emit('listChange',this.list)
-            },
-            itemToggle(index){
-                this.list[index].isCom=!this.list[index].isCom
-                //数组改变，传递给父组件
-                this.$emit('listChange',this.list)
-            },
-            itemDel(index){
-                this.list.splice(index,1)
-                //数组改变，传递给父组件
-                this.$emit('listChange',this.list)
             },
             //依据父组件传递来的props状态，对当前item的v-show做计算
             //方法的执行会改变betterscroll的内容区，需要重新计算DOM高度后刷新
@@ -90,37 +83,16 @@
                         this.bs.refresh()
                     })  
                     return item.isCom
-                }
-                           
-            },
-            clearComplete(){
-                /*删除数据需要从后向前删除，否则数组索引会改变*/
-                for(let i=this.list.length-1;i>=0;i--){
-                    if(this.list[i].isCom){
-                        this.list.splice(i,1)
-                    }
-                }
-                //数组改变，传递给父组件
-                this.$emit('listChange',this.list)
+                }                       
             }
         },
-        mounted(){
-            /*提供一组原始数据*/
-            this.list.push({val:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',isCom:true})
-            this.list.push({val:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',isCom:false})
-            this.list.push({val:'ccccccccccccccccccccccccccccccccccccccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',isCom:true})
-            for(let i=0;i<=30;i++){
-                this.list.push({val:i,isCom:false})
-            }
-            this.list.push({val:31,isCom:true})
+        created(){
             //初始化betterscroll
             this.$nextTick(() => {
                 this.bs=new BScroll(this.$refs["list-bs"],{
                     click:true
                 })
             })
-            //数组初始化，传递给父组件
-            this.$emit('listChange',this.list)
         }
     }
 </script>

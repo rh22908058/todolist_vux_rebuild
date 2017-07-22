@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <h1 class="header">todos</h1>
-    <list @listChange="computeList" :allSel="allSel" :actSel="actSel" :comSel="comSel" ref="list"></list>
+    <list :allSel="allSel" :actSel="actSel" :comSel="comSel" ref="list"></list>
     <footer class="footer">
       <div class="item-left">{{length}}items left</div>
       <div class="item-status">
@@ -9,13 +9,16 @@
         <span class="item-active" :class="{'select':actSel}" @click="selectStatus">Active</span>
         <span class="item-completed" :class="{'select':comSel}" @click="selectStatus">Completed</span>
       </div>
-      <div class="clear" @click="clearCompleted" v-show="hasCompleted">Clear completed</div>
+      <div class="clear" @click="clearComplete" v-show="hasCompleted">Clear completed</div>
     </footer>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
 import list from './components/list/list.vue'
+/*只需要引入mapMutations方法展开mutations数组，而并不需要引入store.js，因为已经在根组件引入*/
+import { mapMutations } from 'vuex'
+
 export default {
   data(){
     return {
@@ -30,17 +33,10 @@ export default {
     list
   },
   methods:{
-    //接收子组件list传来的list数组
-    computeList(list){
-      this.length=list.length
-      for(let i=0;i<list.length;i++){
-        if(list[i].isCom){
-          this.hasCompleted=true
-          return
-        }
-        this.hasCompleted=false
-      }
-    },
+    /*引入store.mutations的方法*/
+    ...mapMutations([
+        'clearComplete'
+    ]),
     selectStatus(event){
       if(event.target.className.indexOf('item-all')>=0){
         this.allSel=true
@@ -57,11 +53,7 @@ export default {
         this.actSel=false
         this.comSel=true
       }
-    },
-    //点击删除，调用子组件的clearComplete方法
-    clearCompleted(){
-      this.$refs.list.clearComplete()
-    },
+    }
   }
 }
 </script>

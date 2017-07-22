@@ -3,12 +3,16 @@
 import Vue from 'vue'
 import App from './App'
 import "./common/stylus/icon.styl"
+/*引入store.js文件*/
+import store from './store/index.js'
 
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({
     el: '#app',
+    /*注入根组件*/
+    store,
     template: '<App/>',
     components: { App }
 })
